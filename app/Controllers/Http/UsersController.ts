@@ -1,22 +1,11 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  password: string
-}
+import User from '../../Models/User'
 
 export default class UsersController {
   public async index({}: HttpContextContract) {
-    return [
-      {
-        id: 1,
-        name: 'John Doe',
-        email: 'johndoe@gmail.com',
-        password: '123456',
-      },
-    ]
+    const users = await User.all()
+
+    return users
   }
 
   public async create({ request }: HttpContextContract) {
@@ -26,23 +15,80 @@ export default class UsersController {
       return { error: 'Missing data' }
     }
 
-    const user: User = {
-      id: String(new Date().getTime() + Math.random()),
+    const user = {
       name: data.name,
       email: data.email,
       password: data.password,
     }
 
+    const userSave = await User.create(user)
+
+    return userSave
+  }
+
+  public async show({ request }: HttpContextContract) {
+    const { id } = request.params()
+
+    const user = await User.findOrFail(id)
+
     return user
   }
 
-  public async store({}: HttpContextContract) {}
+  public async edit({ request }: HttpContextContract) {
+    const { id } = request.params()
+    const { password } = request.only(['password'])
 
-  public async show({}: HttpContextContract) {}
+    if (!password) {
+      return { error: 'Missing data' }
+    }
 
-  public async edit({}: HttpContextContract) {}
+    const user = await User.findOrFail(id)
 
-  public async update({}: HttpContextContract) {}
+    user.password = password
 
-  public async destroy({}: HttpContextContract) {}
+    await user
+      .save()
+      .then(() => {
+        return { message: 'Password updated' }
+      })
+      .catch(() => {
+        return { error: 'Error updating password' }
+      })
+  }
+
+  public async update({ request }: HttpContextContract) {
+    const { id } = request.params()
+    const { name, email } = request.only(['name', 'email'])
+
+    if (!name && !email) {
+      return { error: 'Missing data' }
+    }
+
+    const user = await User.findOrFail(id)
+
+    if (name) {
+      user.name = name
+    } else if (email) {
+      user.email = email
+    }
+
+    await user
+      .save()
+      .then(() => {
+        return { message: 'User updated' }
+      })
+      .catch(() => {
+        return { error: 'Error updating user' }
+      })
+  }
+
+  public async destroy({ request }: HttpContextContract) {
+    const { id } = request.params()
+
+    const user = await User.findOrFail(id)
+
+    await user.delete()
+
+    return { message: 'User deleted' }
+  }
 }

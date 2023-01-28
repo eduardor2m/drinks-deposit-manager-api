@@ -19,21 +19,27 @@
 */
 
 import Route from '@ioc:Adonis/Core/Route'
-import { schema } from '@ioc:Adonis/Core/Validator'
 
-Route.get('/', async () => {
-  return { hello: 'world' }
-})
-
-Route.post('/users', async ({ request, response }) => {
-  const newUserSchema = schema.create({
-    name: schema.string(),
-    email: schema.string(),
-    password: schema.string(),
-  })
-
-  const validation = await request.validate({ schema: newUserSchema })
-
-  return response.status(201).send(validation)
-}) // Create user
-Route.get('/users', 'UsersController.index') // List users
+Route.group(() => {
+  Route.group(() => {
+    Route.get('/', 'UsersController.index') // /api/v1/users
+    Route.post('/', 'UsersController.create') // /api/v1/posts
+    Route.get('/:id', 'UsersController.show') // /api/v1/users/1
+    Route.put('/:id', 'UsersController.edit') // /api/v1/users/1
+    Route.post('/:id', 'UsersController.update') // /api/v1/users/1
+    Route.delete('/:id', 'UsersController.destroy') // /api/v1/users/1
+  }).prefix('/users')
+  Route.group(() => {
+    Route.get('/', 'ProductsController.index') // /api/v1/posts
+    Route.post('/', 'ProductsController.create') // /api/v1/posts
+    Route.get('/:id', 'ProductsController.show') // /api/v1/posts/1
+    Route.post('/:id', 'ProductsController.update') // /api/v1/posts/1
+    Route.delete('/:id', 'ProductsController.destroy') // /api/v1/posts/1
+  }).prefix('/products')
+  Route.group(() => {
+    Route.get('/', 'SalesController.index') // /api/v1/posts
+    Route.post('/', 'SalesController.create') // /api/v1/posts
+    Route.get('/:id', 'SalesController.show') // /api/v1/posts/1
+    Route.delete('/:id', 'SalesController.destroy') // /api/v1/posts/1
+  }).prefix('/sales')
+}).prefix('/api/v1')
