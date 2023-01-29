@@ -42,4 +42,6 @@ Route.group(() => {
     Route.get('/:id', 'SalesController.show') // /api/v1/posts/1
     Route.delete('/:id', 'SalesController.destroy') // /api/v1/posts/1
   }).prefix('/sales')
-}).prefix('/api/v1')
+})
+  .prefix('/api/v1')
+  .middleware('auth')

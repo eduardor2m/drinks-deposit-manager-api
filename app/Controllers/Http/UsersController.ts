@@ -1,4 +1,5 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Hash from '@ioc:Adonis/Core/Hash'
 import User from '../../Models/User'
 
 export default class UsersController {
@@ -15,23 +16,23 @@ export default class UsersController {
       return { error: 'Missing data' }
     }
 
+    const userExists = await User.findBy('email', data.email)
+
+    if (userExists) {
+      return { error: 'User already exists' }
+    }
+
+    const password = await Hash.make(data.password)
+
     const user = {
       name: data.name,
       email: data.email,
-      password: data.password,
+      password,
     }
 
     const userSave = await User.create(user)
 
     return userSave
-  }
-
-  public async show({ request }: HttpContextContract) {
-    const { id } = request.params()
-
-    const user = await User.findOrFail(id)
-
-    return user
   }
 
   public async edit({ request }: HttpContextContract) {
